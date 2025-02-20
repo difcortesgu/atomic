@@ -1,10 +1,10 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 
-export default function NewHabit() {
+export default function Habit() {
   return (
     <View>
-      <Text>NewHabit</Text>
+      <Text>Habit</Text>
     </View>
   )
 }
