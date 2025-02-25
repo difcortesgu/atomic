@@ -1,13 +1,15 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { View, Text, TouchableOpacity } from 'react-native';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import React, { useState } from 'react';
 import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import { SwipeListView } from 'react-native-swipe-list-view';
+import { globalStyles } from '@/styles/GlobalStyles';
+import ActionButton from '@/components/ActionButton';
 
 type Habit = {
 	name: string,
-	icon: keyof typeof Ionicons.glyphMap
+	icon: keyof typeof MaterialIcons.glyphMap,
 	plant: string,
 	//TODO define how to show the plants
 	remainders: Date[],
@@ -22,7 +24,7 @@ const blurhash =
 const mockHabits: Habit[] = [
 	{
 		name: "Morning Run",
-		icon: "walk",
+		icon: "directions-run",
 		plant: 'https://picsum.photos/200?random=1',// "Oak Tree",
 		remainders: [new Date("2025-02-21T06:30:00")],
 		days: [1, 3, 5],
@@ -126,36 +128,32 @@ export default function HabitList() {
 
 	// Render left action button
 	const renderLeftActions = (data: any) => (
-		<View style={[styles.hiddenContainer, { left: 0 }]}>
-			<TouchableOpacity style={[styles.actionButton, { backgroundColor: 'green' }]} onPress={() => completeHabit(data)}>
-				<Ionicons name="checkmark-done" size={32} color="white" />
-			</TouchableOpacity>
+		<View style={[globalStyles.hiddenContainer, { left: 0 }]}>
+			<ActionButton data={data} action={completeHabit} icon='check' type='suceess' />
 		</View>
 	);
 
 	// Render right action button
 	const renderRightActions = (data: any) => (
-		<View style={[styles.hiddenContainer, { right: 0 }]}>
-			<TouchableOpacity style={[styles.actionButton, { backgroundColor: 'red' }]} onPress={() => undoCompleteHabit(data)}>
-				<Ionicons name="trash-bin" size={32} color="white" />
-			</TouchableOpacity>
+		<View style={[globalStyles.hiddenContainer, { right: 0 }]}>
+			<ActionButton data={data} action={undoCompleteHabit} icon='undo' type='danger' />
 		</View>
 	);
 
 	return (
 		<View style={{ flex: 1 }}>
-			<Text style={styles.title}>Habitos</Text>
+			<Text style={globalStyles.title}>Habitos</Text>
 			<SwipeListView
 				data={habits}
 				keyExtractor={(_, index) => index.toString()}
 				renderItem={({ item, index }) => (
 					<Link href={`/(habits)/${index}`}>
-						<View style={styles.habitContainer}>
-							<Image style={styles.image} source={item.plant} transition={1000} />
-							<View style={styles.textContainer}>
-								<View style={styles.row}>
-									<Ionicons name={item.icon} size={32} color="red" />
-									<Text style={styles.habitName}>{item.name}</Text>
+						<View style={globalStyles.habitContainer}>
+							<Image style={globalStyles.image} source={item.plant} transition={1000} />
+							<View style={globalStyles.textContainer}>
+								<View style={globalStyles.row}>
+									<MaterialIcons name={item.icon} size={32} color="red" />
+									<Text style={globalStyles.habitName}>{item.name}</Text>
 								</View>
 							</View>
 						</View>
@@ -171,80 +169,7 @@ export default function HabitList() {
 				rightOpenValue={-75} // Swipe left
 			/>
 
-<TouchableOpacity style={styles.fab} onPress={addNewHabit}>
-        <Ionicons name="add" size={32} color="white" />
-      </TouchableOpacity>
+			<ActionButton style={globalStyles.fab} action={addNewHabit} icon='add' type='info' />
 		</View>
 	);
 }
-
-const styles = StyleSheet.create({
-	title: {
-		fontSize: 24,
-		fontWeight: 'bold',
-		textAlign: 'center',
-		marginVertical: 10
-	},
-	image: {
-		width: 50,
-		height: 50,
-		borderRadius: 25
-	},
-	textContainer: {
-		flex: 1,
-		paddingLeft: 10,
-		justifyContent: 'center'
-	},
-	row: {
-		flexDirection: 'row',
-		alignItems: 'center'
-	},
-	habitName: {
-		marginLeft: 10,
-		fontSize: 18
-	},
-	actionText: {
-		color: 'white',
-		fontWeight: 'bold'
-	},
-
-	habitContainer: {
-		flexDirection: 'row',
-		backgroundColor: 'white',
-		padding: 20,
-		marginVertical: 5,
-		borderRadius: 10
-	},
-	hiddenContainer: {
-		position: 'absolute',
-		top: 0,
-		bottom: 0,
-		justifyContent: 'center',
-		width: 75,
-		alignItems: 'center'
-	},
-	actionButton: {
-		justifyContent: 'center',
-		alignItems: 'center',
-		width: 60,
-		height: 60,
-		borderRadius: 30
-	},
-	// Floating Action Button (FAB)
-	fab: {
-		position: 'absolute',
-		bottom: 30, // Adjusts distance from bottom
-		right: 30, // Adjusts distance from right
-		backgroundColor: '#007AFF', // Blue color
-		width: 60,
-		height: 60,
-		borderRadius: 30, // Makes it circular
-		justifyContent: 'center',
-		alignItems: 'center',
-		elevation: 5, // Adds shadow on Android
-		shadowColor: '#000', // Adds shadow on iOS
-		shadowOpacity: 0.3,
-		shadowOffset: { width: 0, height: 2 },
-		shadowRadius: 4,
-	  },
-});
