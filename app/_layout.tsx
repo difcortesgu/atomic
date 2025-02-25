@@ -1,16 +1,17 @@
-import { Stack } from 'expo-router';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Drawer } from 'expo-router/drawer';
 import React from 'react';
 
 export default function TabLayout() {
-
 	return (
-		<Stack screenOptions={{}}>
-			<Stack.Screen name="index" options={{ title: 'Home' }} />
-			<Stack.Screen name="Habit" options={{ title: 'Habit' }} />
-			<Stack.Screen name="HabitList" options={{ title: 'Habit List' }} />
-			<Stack.Screen name="Calendar" options={{ title: 'Habit Calendar' }} />
-			<Stack.Screen name="Statistics" options={{ title: 'Statistics' }} />
-			<Stack.Screen name="Settings" options={{ title: 'Settings' }} />
-		</Stack>
+		<GestureHandlerRootView style={{ flex: 1 }}>
+			<Drawer screenOptions={{}}>
+				<Drawer.Screen name="index" options={{ drawerLabel: 'Home', title: 'Home' }} />
+				<Drawer.Screen name="(habits)" options={{ drawerLabel: 'Habit List', title: 'Habit List' }} />
+				<Drawer.Screen name="Calendar" options={{ drawerLabel: 'Habit Calendar', title: 'Habit Calendar' }} />
+				<Drawer.Screen name="Statistics" options={{ drawerLabel: 'Statistics', title: 'Statistics' }} />
+				<Drawer.Screen name="Settings" options={{ drawerLabel: 'Settings', title: 'Settings' }} />
+			</Drawer>
+		</GestureHandlerRootView>
 	);
 }
