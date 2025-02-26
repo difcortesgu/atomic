@@ -29,7 +29,6 @@ export const globalStyles = StyleSheet.create({
         color: 'white',
         fontWeight: 'bold'
     },
-
     habitContainer: {
         flexDirection: 'row',
         backgroundColor: 'white',
@@ -38,12 +37,26 @@ export const globalStyles = StyleSheet.create({
         borderRadius: 10
     },
     hiddenContainer: {
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        justifyContent: 'center',
-        width: 75,
-        alignItems: 'center'
+        display: 'flex',
+        flexDirection: 'row',
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    leftActionsContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        flex: 1,
+        rowGap: 10
+    },
+    rightActionsContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        flex: 1,
     },
     actionButton: {
         justifyContent: 'center',

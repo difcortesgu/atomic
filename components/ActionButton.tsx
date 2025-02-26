@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity } from 'react-native'
 import React from 'react'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { globalStyles } from '@/styles/GlobalStyles'
 
 type ActionButtonType = 'suceess' | 'danger' | 'warning' | 'info' | 'light' | 'dark'
@@ -8,12 +8,13 @@ type ActionButtonType = 'suceess' | 'danger' | 'warning' | 'info' | 'light' | 'd
 type ActionButtonProps = {
     data?: any
     action: Function
-	icon: keyof typeof MaterialIcons.glyphMap
+    icon?: keyof typeof FontAwesome.glyphMap,
+    text?: string,
     type: ActionButtonType,
     style?: any
 }
 
-export default function ActionButton({ data, action, type, icon, style } : ActionButtonProps) {
+export default function ActionButton({ data, action, type, icon, text, style }: ActionButtonProps) {
     let backgroundColor = 'green'
     let color = 'white'
     switch (type) {
@@ -37,8 +38,13 @@ export default function ActionButton({ data, action, type, icon, style } : Actio
     }
 
     return (
-    <TouchableOpacity style={[globalStyles.actionButton, { backgroundColor }, style]} onPress={() => action(data)}>
-        <MaterialIcons name={icon} size={32} color={color} />
-    </TouchableOpacity>
-)
+        <TouchableOpacity style={[globalStyles.actionButton, { backgroundColor }, style]} onPress={() => action(data)}>
+            {icon &&
+                <FontAwesome name={icon} size={32} color={color} />
+            }
+            {text &&
+                <Text style={{ color }}>{text}</Text>
+            }
+        </TouchableOpacity>
+    )
 }
