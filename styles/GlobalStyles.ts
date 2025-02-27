@@ -82,4 +82,8 @@ export const globalStyles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowRadius: 4,
     },
+    sectionHeader: {
+        backgroundColor: '#f2f2f2',
+        padding: 10,
+    },
 });

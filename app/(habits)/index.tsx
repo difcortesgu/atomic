@@ -8,6 +8,7 @@ import { globalStyles } from '@/styles/GlobalStyles';
 import ActionButton from '@/components/ActionButton';
 
 type Habit = {
+	[x: string]: any;
 	id: number,
 	name: string,
 	icon: keyof typeof FontAwesome.glyphMap,
@@ -100,6 +101,66 @@ const mockHabits: Habit[] = [
 		repetitions: 1,
 		repetitionsLeft: 1,
 	},
+	{
+		id: 6,
+		name: "Practice Guitar",
+		icon: "music",
+		plant: 'https://picsum.photos/200?random=7', // "Maple Tree",
+		remainders: [new Date("2025-02-21T18:30:00")],
+		days: [1, 3, 5],
+		allowRemainders: true,
+		progress: [],
+		repetitions: 2,
+		repetitionsLeft: 2,
+	},
+	{
+		id: 7,
+		name: "Workout",
+		icon: "heartbeat",
+		plant: 'https://picsum.photos/200?random=8', // "Pine Tree",
+		remainders: [new Date("2025-02-21T07:00:00")],
+		days: [0, 2, 4, 6],
+		allowRemainders: true,
+		progress: [],
+		repetitions: 3,
+		repetitionsLeft: 3,
+	},
+	{
+		id: 8,
+		name: "Learn a New Language",
+		icon: "language",
+		plant: 'https://picsum.photos/200?random=9', // "Lavender",
+		remainders: [new Date("2025-02-21T19:00:00")],
+		days: [1, 3, 5],
+		allowRemainders: true,
+		progress: [new Date("2025-02-19")],
+		repetitions: 2,
+		repetitionsLeft: 1,
+	},
+	{
+		id: 9,
+		name: "Cook a New Recipe",
+		icon: "cutlery",
+		plant: 'https://picsum.photos/200?random=10', // "Thyme",
+		remainders: [new Date("2025-02-21T17:00:00")],
+		days: [5, 6],
+		allowRemainders: true,
+		progress: [],
+		repetitions: 1,
+		repetitionsLeft: 1,
+	},
+	{
+		id: 10,
+		name: "Go for a Walk",
+		icon: "street-view",
+		plant: 'https://picsum.photos/200?random=11', // "Fern",
+		remainders: [new Date("2025-02-21T16:00:00")],
+		days: [0, 2, 4, 6],
+		allowRemainders: true,
+		progress: [],
+		repetitions: 2,
+		repetitionsLeft: 2,
+	},
 ];
 
 const mockCompletedHabits: Habit[] = [];
@@ -109,8 +170,9 @@ export default function HabitList() {
 	const [pendingHabits, setPendingHabits] = useState(mockHabits);
 	const [completedHabits, setCompletedHabits] = useState(mockCompletedHabits);
 
-	const completeHabit = (data: ListRenderItemInfo<Habit>, count: number, rowMap: RowMap<Habit>) => {
+	const completeHabit = (data: { item: Habit, index: number }, count: number, rowMap: RowMap<Habit>) => {
 		//TODO: update backend
+		rowMap[`${data.item.sectionKey}-${data.index.toString()}`]?.closeRow();
 		setPendingHabits((prevHabits) => {
 			const updatedHabits = prevHabits.map((h) => {
 				if (h.id === data.item.id) {
@@ -130,19 +192,17 @@ export default function HabitList() {
 			}).filter((habit): habit is Habit => habit !== null); // Remove completed habits (null values)
 			return updatedHabits;
 		});
-		rowMap[data.index]?.closeRow();
 	}
 
-	const undoCompleteHabit = (data: ListRenderItemInfo<Habit>, rowMap: RowMap<Habit>) => {
+	const undoCompleteHabit = (data: { item: Habit, index: number }, rowMap: RowMap<Habit>) => {
 		//TODO: update backend
-
 		const updatedProgress = data.item.progress.filter((date) => date !== new Date())
 		data.item.progress = updatedProgress
-		data.item.repetitionsLeft -= data.item.repetitions
+		data.item.repetitionsLeft = data.item.repetitions
+		rowMap[`${data.item.sectionKey}-${data.index.toString()}`]?.closeRow();
 
 		setPendingHabits([...pendingHabits, data.item])
 		setCompletedHabits(completedHabits.filter((habit) => habit.id !== data.item.id))
-		rowMap[data.index]?.closeRow();
 	}
 
 	const addNewHabit = () => {
@@ -152,46 +212,75 @@ export default function HabitList() {
 
 	return (
 		<View style={{ flex: 1 }}>
-			<Text style={globalStyles.title}>Habitos Pendientes Hoy</Text>
 			<SwipeListView
-				data={pendingHabits}
-				keyExtractor={(_, index) => index.toString()}
+				useSectionList={true} // Enable SectionList mode
+				sections={[
+					{ title: 'Habitos Pendientes Hoy', data: pendingHabits.map((habit, index) => ({ ...habit, sectionKey: 'pending' })) },
+					{ title: 'Habitos Completados Hoy', data: completedHabits.map((habit, index) => ({ ...habit, sectionKey: 'completed' })) },
+				]}
+				keyExtractor={(item, index) => `${item.sectionKey}-${index.toString()}`}
+				onRowOpen={(rowKey, rowMap) => {
+					const [sectionKey, itemKey] = rowKey.split('-');
+					const inPendingSection = sectionKey === 'pending'
+					if (inPendingSection) {
+						const habit = pendingHabits[parseInt(itemKey)]
+						if (habit.repetitionsLeft === 1) completeHabit({ item: {...habit, sectionKey}, index: parseInt(itemKey) }, 1, rowMap)
+					} else {
+						const habit = completedHabits[parseInt(itemKey)]
+						undoCompleteHabit({ item: {...habit, sectionKey}, index: parseInt(itemKey) }, rowMap)
+					}
+				}}
+				renderSectionHeader={({ section: { title } }) => (
+					<View style={globalStyles.sectionHeader}>
+						<Text style={globalStyles.title}>{title}</Text>
+					</View>
+				)}
 				renderItem={(data, rowMap) => {
 					const numberOfButtons = Math.min(3, data.item.repetitionsLeft)
 					const leftOpenValue = 60 * numberOfButtons
+					const inPendingSection = data.item.sectionKey === 'pending'
 
 					return (
 						<SwipeRow
+							rightOpenValue={-60}
 							leftOpenValue={leftOpenValue}
-							disableLeftSwipe={true}
+							disableRightSwipe={!inPendingSection}
+							disableLeftSwipe={inPendingSection}
 						>
+							{/* Hidden container */}
 							<View style={globalStyles.hiddenContainer}>
-								<View style={globalStyles.leftActionsContainer}>
-									<ActionButton
-										data={data}
-										action={(data: ListRenderItemInfo<Habit>) => completeHabit(data, data.item.repetitionsLeft, rowMap)}
-										icon='check'
-										type='suceess'
-									/>
-									{data.item.repetitionsLeft > 1 &&
-										<>
-											<ActionButton
-												data={data}
-												action={(data: ListRenderItemInfo<Habit>) => completeHabit(data, 1, rowMap)}
-												text='+1'
-												type='suceess'
-											/>
-											{data.item.repetitionsLeft > 2 &&
+								{inPendingSection ?
+									<View style={globalStyles.leftActionsContainer}>
+										<ActionButton
+											data={data}
+											action={(data: ListRenderItemInfo<Habit>) => completeHabit(data, data.item.repetitionsLeft, rowMap)}
+											icon='check'
+											type='suceess'
+										/>
+										{data.item.repetitionsLeft > 1 &&
+											<>
 												<ActionButton
 													data={data}
-													action={(data: ListRenderItemInfo<Habit>) => completeHabit(data, Math.round(data.item.repetitionsLeft / 2), rowMap)}
-													text={"+" + Math.round(data.item.repetitionsLeft / 2).toString()}
+													action={(data: ListRenderItemInfo<Habit>) => completeHabit(data, 1, rowMap)}
+													text='+1'
 													type='suceess'
 												/>
-											}
-										</>
-									}
-								</View>
+												{data.item.repetitionsLeft > 2 &&
+													<ActionButton
+														data={data}
+														action={(data: ListRenderItemInfo<Habit>) => completeHabit(data, Math.round(data.item.repetitionsLeft / 2), rowMap)}
+														text={"+" + Math.round(data.item.repetitionsLeft / 2).toString()}
+														type='suceess'
+													/>
+												}
+											</>
+										}
+									</View>
+									:
+									<View style={globalStyles.rightActionsContainer}>
+										<ActionButton data={data.item} action={() => undoCompleteHabit(data, rowMap)} icon='undo' type='danger' />
+									</View>
+								}
 							</View>
 
 							<View>
@@ -211,34 +300,6 @@ export default function HabitList() {
 					)
 				}}
 			/>
-
-			<Text style={globalStyles.title}>Habitos Completados Hoy</Text>
-			<SwipeListView
-				data={completedHabits}
-				keyExtractor={(_, index) => index.toString()}
-				renderItem={({ item, index }) => {
-					return <Link href={`/(habits)/${index}`}>
-						<View style={globalStyles.habitContainer}>
-							<Image style={globalStyles.image} source={item.plant} transition={1000} />
-							<View style={globalStyles.textContainer}>
-								<View style={globalStyles.row}>
-									<FontAwesome name={item.icon} size={32} color="red" />
-									<Text style={globalStyles.habitName}>{item.name}</Text>
-								</View>
-							</View>
-						</View>
-					</Link>
-				}}
-				renderHiddenItem={(data, rowMap) => (
-					<View style={globalStyles.rightActionsContainer}>
-						<ActionButton data={data.item} action={() => undoCompleteHabit(data, rowMap)} icon='undo' type='danger' />
-					</View>
-				)}
-				disableRightSwipe={true}
-				rightOpenValue={-60} // Swipe left
-			/>
-
-
 			<ActionButton style={globalStyles.fab} action={addNewHabit} icon='plus' type='info' />
 		</View>
 	);
